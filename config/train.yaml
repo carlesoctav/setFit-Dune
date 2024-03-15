@@ -10,7 +10,7 @@ second_phase_end_to_end: False
 train_set: data/raw/15239678.jsonl
 val_ratio: 0.2
 test_set:
-few_shot: 8
+few_shot: 1000
 max_seq_length: 256
 hf_push_to_hub: carlesoctav/SentimentClassifierDune
 

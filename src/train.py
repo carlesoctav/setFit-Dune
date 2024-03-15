@@ -8,8 +8,10 @@ from typing import Optional
 import yaml
 from datasets import load_dataset
 from pydantic import BaseModel
-from setfit import SetFitModel, SetFitModelCardData, Trainer, TrainingArguments, sample_dataset
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from setfit import (SetFitModel, SetFitModelCardData, Trainer,
+                    TrainingArguments, sample_dataset)
+from sklearn.metrics import (accuracy_score, f1_score, precision_score,
+                             recall_score)
 
 
 class Config(BaseModel):
@@ -31,7 +33,7 @@ class Config(BaseModel):
     test_set: Optional[str]
     max_seq_length: int = 256
     hf_push_to_hub: Optional[str]
-    few_shot: int
+    few_shot: Optional[int]
 
 
 def text_cleaning(input_string: str):
@@ -87,7 +89,14 @@ def main(config: Config):
         ],
     )
     ds = clean_ds["train"].train_test_split(test_size=config.val_ratio)
-    train_ds = sample_dataset(ds["train"], num_samples= config.few_shot)
+    num_samples = min(
+        len(ds["train"].filter(lambda x: x["label"] == 0)),
+        len(ds["train"].filter(lambda x: x["label"] == 1)),
+    )
+    print(f"DEBUGPRINT[3]: train.py:96: num_samples={num_samples}")
+    if config.few_shot and config.few_shot < num_samples:
+        num_samples = config.few_shot
+    train_ds = sample_dataset(ds["train"], num_samples=num_samples)
     val_ds = ds["test"]
     print(f"DEBUGPRINT[1]: train.py:85: train_ds={train_ds}")
     print(f"DEBUGPRINT[2]: train.py:87: val_ds={val_ds}")
