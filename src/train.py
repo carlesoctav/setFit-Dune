@@ -108,13 +108,12 @@ def main(config: Config):
             license="apache-2.0",
             dataset_name=config.train_set,
         ),
-        use_differentiable_head=True,
     )
 
     train_args = TrainingArguments(
         output_dir=f"exp/{config.exp_name}",
-        batch_size=config.batch_size,
-        num_epochs=config.epochs,
+        batch_size=(config.batch_size, config.batch_size),
+        num_epochs=(config.epochs, config.epochs), 
         evaluation_strategy="epoch",
         save_strategy="epoch",
         load_best_model_at_end=True,
@@ -125,14 +124,14 @@ def main(config: Config):
         args=train_args,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        metric="accuracy",
+        metric=compute_metrics,
         # column_mapping={"sentence": "text", "label": "label"},
     )
 
     trainer.train()
+    metrics = trainer.evaluate()
+    print(f"eval metrics:{metrics}")
 
-    if config.hf_push_to_hub:
-        trainer.push_to_hub(config.hf_push_to_hub)
 
     if config.test_set:
         test_ds = load_dataset("json", data_files=config.test_set)
@@ -148,8 +147,11 @@ def main(config: Config):
                 "name",
             ],
         )
-        trainer.evaluate(clean_test_ds["train"])
+        test_metrics = trainer.evaluate(clean_test_ds["train"])
+        print(f"test metrics: {test_metrics}")
 
+    if config.hf_push_to_hub:
+        trainer.push_to_hub(config.hf_push_to_hub)
 
 if __name__ == "__main__":
     config = parse_args()

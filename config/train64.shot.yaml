@@ -1,0 +1,15 @@
+exp_name: Dune2Classifier64shot
+pretrained_model: paraphrase-mpnet-base-v2
+language: en
+optimizer: AdamW
+lr: 2e-5
+epochs: 1
+batch_size: 16
+num_pairs_contrastive: 10
+second_phase_end_to_end: False
+train_set: data/raw/15239678.jsonl
+val_ratio: 0.2
+test_set:
+few_shot: 64
+max_seq_length: 256
+hf_push_to_hub: carlesoctav/SentimentClassifierDune64shot
